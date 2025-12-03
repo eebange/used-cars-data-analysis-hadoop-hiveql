@@ -120,10 +120,9 @@ _note: we will do the majority of our data ETL on our local PC, hadoop cluster, 
 
 # Step 4: Uploading the Dataset to the Cluster
 Our raw dataset is over the storage limit allocated for us on our HDFS.
+In order to address the memory limitation, first upload the file to the Hadoop Linux Cluster (a server we connect to), and then upload it to HDFS from there. 
 
-in order to mitigate this, we will first upload the file to our Hadoop Linux Cluster (a server we connect to), and then upload it to the HDFS from there. 
-
-**Move the file from your local PC to the temporary (tmp) directory in your Hadoop cluster, which has over 10 GB of dedicated storage, but will routinely delete all files in this directory, so make sure not to leave a file inside for more than 3 days a time to be safe:**
+Move the file from your local PC to the temporary (tmp) directory in your Hadoop cluster, which has over 10 GB of dedicated storage, but will routinely delete all files in this directory, so make sure not to leave a file inside for more than 3 days a time to be safe:
 
 ## First, check if your personal folder exists within the directory:
 
@@ -133,7 +132,7 @@ in order to mitigate this, we will first upload the file to our Hadoop Linux Clu
 
 **mkdir /tmp/username** -tells CLI to create your personal folder within the tmp storage system. 
 
-**Upload dataset from Local PC to the Hadoop Linux Cluster /tmp Path**
+Upload dataset from Local PC to the Hadoop Linux Cluster /tmp Path
 
 **scp "path/to/used_cars_data.csv" username@cluster_ip:/tmp/username/** 
 
@@ -149,7 +148,7 @@ in order to mitigate this, we will first upload the file to our Hadoop Linux Clu
 
 Before we can start using the data to create tables in HIVE, we must first upload the file to the HDFS:
 
-## create a folder inside HDFS so that we can upload our file there from the server (linux cluster):
+## Create a folder in the HDFS so that we can upload and store our large dataset from the hadoop cluster server:
 
 **hdfs dfs -mkdir /user/username/used_cars_raw**
 
@@ -167,16 +166,368 @@ _note: hdfs and dfs are used so that the CLI specifies to create the folder in H
 
 Although the raw dataset came separated by commas, making it a CSV, the records themselves had commas, quotes, list text, and symbols in them. Because of this, HIVE would automatically misalign the data (having strings in columns that should be int, and vice versa)
 
-In order to mitigate this, we create the table in HIVE using the raw dataset
+In order to mitigate this, we are doing 2 important things:
+1. Format every column as a **STRING**
+2. Register the file in HIVE as an external table in HDFS **/user/eebange/used_cars_raw** to avoid accidentally dropping our tables, which would delete the source data. Doing this adds a level of security for the data
+_note: we are not cleaning the data yet, this is simply to upload the dataset and create a raw dataset inside HIVE_
+
+## Use your database
+while in beeline, make sure to use your own database so that changes made are reflected on your own profile/databases.
+
+**use username_database;**
+
+**example: use eebange;**
+
+## Create the raw table _used_cars_raw_ , applying the STRING datatype to all records
+
+CREATE EXTERNAL TABLE IF NOT EXISTS used_cars_raw (
+
+  vin                     STRING,
+  
+  back_legroom            STRING,
+  
+  bed                     STRING,
+  
+  bed_height              STRING,
+  
+  bed_length              STRING,
+  
+  body_type               STRING,
+  
+  cabin                   STRING,
+  
+  city                    STRING,
+
+  city_fuel_economy       STRING,
+  
+  combine_fuel_economy    STRING,
+  
+  daysonmarket            STRING,
+  
+ 
+  dealer_zip              STRING,
+  
+  description             STRING,
+  
+  engine_cylinders        STRING,
+  
+  engine_displacement     STRING,
+  
+  engine_type             STRING,
+  
+  exterior_color          STRING,
+  
+  fleet                   STRING,
+  
+  frame_damaged           STRING,
+  
+  franchise_dealer        STRING,
+  
+  franchise_make          STRING,
+  
+  front_legroom           STRING,
+  
+  fuel_tank_volume        STRING,
+  
+  fuel_type               STRING,
+  
+  has_accidents           STRING,
+  
+  height                  STRING,
+  
+  highway_fuel_economy    STRING,
+  
+  horsepower              STRING,
+  
+  interior_color          STRING,
+  
+  iscab                   STRING,
+  
+  is_certified            STRING,
+  
+  is_cpo                  STRING,
+  
+  is_new                  STRING,
+  
+  is_oemcpo               STRING,
+  
+  latitude                STRING,
+  
+  length                  STRING,
+  
+  listed_date             STRING,
+  
+  listing_color           STRING,
+  
+  listing_id              STRING,
+  
+  longitude               STRING,
+  
+  main_picture_url        STRING,
+  
+  major_options           STRING,
+  
+  make_name               STRING,
+  
+  maximum_seating         STRING,
+  
+  mileage                 STRING,
+  
+  model_name              STRING,
+  
+  owner_count             STRING,
+  
+  power                   STRING,
+  
+  price                   STRING,
+  
+  salvage                 STRING,
+  
+  savings_amount          STRING,
+  
+  seller_rating           STRING,
+  
+  sp_id                   STRING,
+  
+  sp_name                 STRING,
+  
+  theft_title             STRING,
+  
+  torque                  STRING,
+  
+  transmission            STRING,
+  
+  transmission_display    STRING,
+  
+  trimid                  STRING,
+  
+  trim_name               STRING,
+  
+  vehicle_damage_category STRING,
+  
+  wheel_system            STRING,
+  
+  wheel_system_display    STRING,
+  
+  wheelbase               STRING,
+  
+  width                   STRING,
+  
+  year                    STRING
+)
 
 
+ROW FORMAT DELIMITED
+
+FIELDS TERMINATED BY ','
+
+STORED AS TEXTFILE
+
+LOCATION '/user/eebange/used_cars_raw/'
+
+TBLPROPERTIES ('skip.header.line.count' = '1');
 
 
+_note: usee all strings in setting up the raw dataset in HIVE so that there is no accidental data misalignments due to commas, symbols, quotes, etc._
 
+## Test table is working properly
+To see if the table is working properly, use the following query to select all records from the table, limiting the result to 5 records
 
+**select * from used_cars_raw limit 5;**
 
+# Step 7: Create a Cleaned Hive Table _used_cars_cleaned_
+After saving the raw data table _used_cars_raw_ the next step is to build a cleaned up, sample for the analysis
 
+For the cleaned table, omit the following 15 columns or attributes due to high null rates (over 86%), irrelevant or duplicate information (horsepower vs power), or just generally badly parsed columns:
 
+## omitted columns from _used_cars_cleaned_
+bed - whether the vehicle had a bed inside or not,  over 95% null
+
+bed_height - height of bed, over 90% null
+
+bed_length - length of bed, over 90% null
+
+cabin - if vehicle had cabin, over 86% null
+
+combine_fuel_economy - combined mileage range, could calculate based on city and highway
+
+description - omitted due to poor structure, little to no pattern or relevance 
+
+engine_type - similar data to engine displacement
+
+fleet - whether car was part of a fleet, mostly null, omitted
+
+is_certified - whether or not vehicle was certified, same as is_cpo
+
+main_picture_url - data type was link to images, challenging to analyze and interpret given current tools
+
+major_options - string columns with little to no cohesion between similar models
+
+power - same information as horsepower
+
+torque - omitted, found unnecessary 
+
+vehicle_damage_category - vehicle damage category, had too many null records
+
+## Cleaned table _used_cars_cleaned_ with a sample of data
+
+use username;
+
+CREATE TABLE used_cars_cleaned AS
+
+SELECT
+   
+   vin,
+   
+   back_legroom,
+   
+   body_type,
+   
+   city,
+   
+   city_fuel_economy,
+   
+   daysonmarket,
+   
+   dealer_zip,
+   
+   engine_cylinders,
+   
+   engine_displacement,
+   
+   exterior_color,
+   
+   frame_damaged,
+   
+   franchise_dealer,
+   
+   franchise_make,
+   
+   front_legroom,
+   
+   fuel_tank_volume,
+   
+   fuel_type,
+   
+   has_accidents,
+   
+   height,
+   
+   highway_fuel_economy,
+   
+   horsepower,
+   
+   interior_color,
+   
+   iscab,
+   
+   is_cpo,
+   
+   is_new,
+   
+   is_oemcpo,
+   
+   latitude,
+   
+   length,
+   
+   listed_date,
+   
+   listing_color,
+   
+   listing_id,
+   
+   longitude,
+   
+   make_name,
+   
+   maximum_seating,
+   
+   mileage,
+   
+   model_name,
+   
+   owner_count,
+   
+   price,
+   
+   salvage,
+   
+   savings_amount,
+   
+   seller_rating,
+   
+   sp_id,
+   
+   sp_name,
+   
+   theft_title,
+   
+   transmission,
+   
+   transmission_display,
+   
+   trimid,
+   
+   trim_name,
+   
+   wheel_system,
+   
+   wheel_system_display,
+
+   wheelbase,
+   
+   width,
+    
+   year
+   
+FROM used_cars_raw;
+
+## Check that the cleaned table _used_cars_cleaned_ is working properly
+
+the following will return the first 10 records in the dataset
+
+**SELECT * FROM used_cars_cleaned LIMIT 10;**
+
+the following will count all the records in the dataset
+
+**select count(*) from used_cars_cleaned**
+
+# Step 8: Export the Cleaned Dataset to HDFS in TSV Format
+
+After creating _used_cars_cleaned_, the next step is to export the clean dataset for analysis
+
+_note: we used tsv instead of csv because excel was having a hard time parsing the data, we opted to focus on tableau for visualizations, as it handles tsv parsing significantly better_
+
+## Export _used_cars_cleaned_ table to a directory in HDFS 
+
+INSERT OVERWRITE DIRECTORY '/user/username/exports/used_cars_cleaned_tsv'
+
+ROW FORMAT DELIMITED
+
+FIELDS TERMINATED BY '\t'
+
+SELECT * FROM used_cars_cleaned;
+
+## Confirm files exported successfully to HDFS
+
+hdfs dfs -ls -h /user/username/exports/used_cars_cleaned_tsv
+
+## Copy exported files from HDFS to your clusters _/tmp_ directory
+
+hdfs dfs -get /user/username/exports/used_cars_cleaned_tsv /tmp/username/
+
+## Confirm file exported to your _/tmp_ directory
+
+ls /tmp/username
+
+## Download _used_cars_cleaned_tsv_ to your Local PC, using **GitBash**
+
+scp -r user_name@ip_address:/tmp/user_name/used_cars_cleaned_tsv ~/Downloads/
+
+example: scp -r eebange@161.153.21.139:/tmp/eebange/used_cars_cleaned_tsv ~/Downloads/
+
+_note: will ask for your password, in this case, same as username. then a window should appear with a download progress_
 
 
 
