@@ -494,39 +494,37 @@ the following will count all the records in the dataset
 
 **select count(*) from used_cars_cleaned**
 
-# Step 8: Export the Cleaned Dataset to HDFS in TSV Format
+# Step 8: Export the Cleaned Dataset to HDFS in CSV Format
 
 After creating _used_cars_cleaned_, the next step is to export the clean dataset for analysis
 
-_note: we used tsv instead of csv because excel was having a hard time parsing the data, we opted to focus on tableau for visualizations, as it handles tsv parsing significantly better_
-
 ## Export _used_cars_cleaned_ table to a directory in HDFS 
 
-INSERT OVERWRITE DIRECTORY '/user/username/exports/used_cars_cleaned_tsv'
+INSERT OVERWRITE DIRECTORY '/user/username/exports/used_cars_cleaned_csv'
 
 ROW FORMAT DELIMITED
 
-FIELDS TERMINATED BY '\t'
+FIELDS TERMINATED BY ','
 
 SELECT * FROM used_cars_cleaned;
 
 ## Confirm files exported successfully to HDFS
 
-hdfs dfs -ls -h /user/username/exports/used_cars_cleaned_tsv
+hdfs dfs -ls -h /user/username/exports/used_cars_cleaned_csv
 
 ## Copy exported files from HDFS to your clusters _/tmp_ directory
 
-hdfs dfs -get /user/username/exports/used_cars_cleaned_tsv /tmp/username/
+hdfs dfs -get /user/username/exports/used_cars_cleaned_csv /tmp/username/
 
 ## Confirm file exported to your _/tmp_ directory
 
 ls /tmp/username
 
-## Download _used_cars_cleaned_tsv_ to your Local PC, using **GitBash**
+## Download _used_cars_cleaned_csv_ to your Local PC, using **GitBash**
 
-scp -r user_name@ip_address:/tmp/user_name/used_cars_cleaned_tsv ~/Downloads/
+scp -r user_name@ip_address:/tmp/user_name/used_cars_cleaned_csv ~/Downloads/
 
-example: scp -r eebange@161.153.21.139:/tmp/eebange/used_cars_cleaned_tsv ~/Downloads/
+example: scp -r eebange@161.153.21.139:/tmp/eebange/used_cars_cleaned_csv ~/Downloads/
 
 _note: will ask for your password, in this case, same as username. then a window should appear with a download progress_
 
