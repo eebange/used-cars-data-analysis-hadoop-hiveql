@@ -118,18 +118,18 @@ Once the connection is made, in your GitBash command line interface (CLI), we ca
 _note: we will do the majority of our data ETL on our local PC, hadoop cluster, and HDFS using CLI commands_
 
 
-## Step 4: Uploading the Dataset to the Cluster
+# Step 4: Uploading the Dataset to the Cluster
 Our raw dataset is over the storage limit allocated for us on our HDFS.
 
 in order to mitigate this, we will first upload the file to our Hadoop Linux Cluster (a server we connect to), and then upload it to the HDFS from there. 
 
 **Move the file from your local PC to the temporary (tmp) directory in your Hadoop cluster, which has over 10 GB of dedicated storage, but will routinely delete all files in this directory, so make sure not to leave a file inside for more than 3 days a time to be safe:**
 
-First, check if your personal folder exists within the directory:
+## First, check if your personal folder exists within the directory:
 
 **ls /tmp/username**
 
-If you get no error code, that means your folder already exists and you are good to continue. If you get an error code or directory does not exist, use the following to create your personal directory within /tmp:
+## If you get no error code, that means your folder already exists and you are good to continue. If you get an error code or directory does not exist, use the following to create your personal directory within /tmp:
 
 **mkdir /tmp/username** -tells CLI to create your personal folder within the tmp storage system. 
 
@@ -141,26 +141,33 @@ If you get no error code, that means your folder already exists and you are good
 
 **example in this case: scp C:\Users\erik\Downloads\used_cars_data.csv eebange@161.153.21.139:/tmp/eebange/**
 
-Confirm the file was uploaded successfully:
+## Confirm the file was uploaded successfully:
 
 **ls -lh /tmp/username**
 
-## Step 5: Creating HDFS Directories and Moving Data Into HDFS
+# Step 5: Creating HDFS Directories and Moving Data Into HDFS
 
 Before we can start using the data to create tables in HIVE, we must first upload the file to the HDFS:
 
-create a folder inside HDFS so that we can upload our file there from the server (linux cluster):
+## create a folder inside HDFS so that we can upload our file there from the server (linux cluster):
 
 **hdfs dfs -mkdir /user/username/used_cars_raw**
 
 _note: hdfs and dfs are used so that the CLI specifies to create the folder in HDFS_
 
-Move the files from cluster to HDFS:
+## Move the files from cluster to HDFS:
 
 **hdfs dfs -put /tmp/username/used_cars_data.csv /user/username/used_cars_raw/**
 
+## Confirm file was successfully moved to HDFS:
 
+**hdfs dfs -ls -h /user/username/used_cars_raw**
 
+# Step 6: Creating the Raw Hive Table (with OpenCSVSerde)
+
+Although the raw dataset came separated by commas, making it a CSV, the records themselves had commas, quotes, list text, and symbols in them. Because of this, HIVE would automatically misalign the data (having strings in columns that should be int, and vice versa)
+
+In order to mitigate this, we create the table in HIVE using the raw dataset
 
 
 
