@@ -162,13 +162,14 @@ _note: hdfs and dfs are used so that the CLI specifies to create the folder in H
 
 **hdfs dfs -ls -h /user/username/used_cars_raw**
 
-# Step 6: Creating the Raw Hive Table (with OpenCSVSerde)
+# Step 6: Creating the Raw Data Hive Table 
 
-Although the raw dataset came separated by commas, making it a CSV, the records themselves had commas, quotes, list text, and symbols in them. Because of this, HIVE would automatically misalign the data (having strings in columns that should be int, and vice versa)
+Although the raw dataset came separated by commas, making it a CSV, the records themselves had commas, quotes, list text, and symbols in them. Because of this, reading the files in HIVE misaligns data (having strings in columns that should be int, and vice versa)
 
-In order to mitigate this, we are doing 2 important things:
-1. Format every column as a **STRING**
-2. Register the file in HIVE as an external table in HDFS **/user/eebange/used_cars_raw** to avoid accidentally dropping our tables, which would delete the source data. Doing this adds a level of security for the data
+To mitigate this, we are doing 2 important things:
+1. Format every column as a **STRING** in the raw table we create
+2. Register the file in HIVE as an external table in HDFS **/user/eebange/used_cars_raw** to avoid accidentally dropping our tables when we make edits. Doing this adds a level of security and helps avoid deleting or editing the raw data file
+   
 _note: we are not cleaning the data yet, this is simply to upload the dataset and create a raw dataset inside HIVE_
 
 ## Use your database
