@@ -388,7 +388,7 @@ SELECT
    
    city_fuel_economy,
    
-   daysonmarket,
+   daysonmarket as days_on_market,
    
    dealer_zip,
    
@@ -412,7 +412,7 @@ SELECT
    
    has_accidents,
    
-   height,
+   height as height_inches,
    
    highway_fuel_economy,
    
@@ -420,17 +420,17 @@ SELECT
    
    interior_color,
    
-   iscab,
+   iscab as is_cab,
    
-   is_cpo,
+   is_cpo as certified_pre_owned,
    
-   is_new,
+   is_new as newly_launched,
    
    is_oemcpo,
    
    latitude,
    
-   length,
+   length as length_inches,
    
    listed_date,
    
@@ -440,27 +440,27 @@ SELECT
    
    longitude,
    
-   make_name,
+   make_name as make,
    
-   maximum_seating,
+   maximum_seating max_seating,
    
    mileage,
    
-   model_name,
+   model_name as model,
    
    owner_count,
    
    price,
    
-   salvage,
+   salvage as is_salvage,
    
-   savings_amount,
+   savings_amount as savings_usd,
    
    seller_rating,
    
-   sp_id,
+   sp_id as seller_id,
    
-   sp_name,
+   sp_name as seller_name,
    
    theft_title,
    
@@ -470,15 +470,15 @@ SELECT
    
    trimid,
    
-   trim_name,
+   trim_name as trim_id,
    
    wheel_system,
    
    wheel_system_display,
 
-   wheelbase,
+   wheelbase as wheelbase_inches,
    
-   width,
+   width as width_inches,
     
    year
    
