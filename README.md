@@ -10,12 +10,10 @@ This data was obtained by running a self made crawler on Cargurus inventory in S
 This data is for academic, research and individual experimentation only and is not intended for commercial purposes.
 Imagine a web app that can estimate the listing price of a vehicle. What features of the vehicle should be used to build a price prediction regression model?
 
-## Group Information
+
 **Members:**
-- Erik Ebangelista Garcia eebange@calstatela.edu
-- Dhruba Barua
-- Elias Trujillo
-- Fernando Olvera
+- Erik Ebangelista Garcia eebange@calstatela.edu erik.eban@gmail.com
+
 ## Data
 
 
